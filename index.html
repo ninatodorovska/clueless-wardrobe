@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cher's Wardrobe</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/chrome.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="bezel">
+  <div class="screen" id="screen">
+
+    <!-- ══ TITLE BAR ══ -->
+    <header class="titlebar">
+      <div class="plate plate--title" id="titlePlate">CHER'S WARDROBE</div>
+      <button class="plate plate--season" id="seasonPlate" title="Click to change season">FALL FASHIONS</button>
+      <div class="titlebar__right">
+        <button class="plate plate--mini" id="crtToggle" title="Toggle CRT effect">CRT</button>
+        <div class="plate plate--mini" id="clock">--:--</div>
+      </div>
+    </header>
+
+    <!-- ══ VIEWPORT ══ -->
+    <div class="viewport" id="viewport">
+
+      <!-- ── WARDROBE ── -->
+      <section class="pane pane--wardrobe" id="pane-wardrobe">
+        <div class="slotstack" id="slotStack"></div>
+
+        <div class="wardrobe__foot">
+          <div class="verdict" id="verdict">
+            <span class="verdict__lamp"></span>
+            <span class="verdict__text">READY</span>
+          </div>
+          <div class="actionrow">
+            <button class="btn btn--big" data-nav="browse">BROWSE</button>
+            <button class="btn btn--big btn--hot" id="dressMe">DRESS ME</button>
+          </div>
+          <div class="actionrow actionrow--sub">
+            <button class="btn" id="saveLook">SAVE LOOK</button>
+            <button class="btn" data-nav="lookbook">LOOKBOOK</button>
+            <button class="btn" id="clearLook">CLEAR</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── BROWSE ── -->
+      <section class="pane pane--browse" id="pane-browse" hidden>
+        <div class="toolbar">
+          <button class="btn btn--hot" id="uploadBtn">&#65291; UPLOAD</button>
+          <input type="file" id="fileInput" accept="image/*" multiple hidden>
+          <select class="field" id="filterLayer" title="Filter by layer"></select>
+          <select class="field" id="filterSeason" title="Filter by season"></select>
+          <input class="field field--search" id="searchBox" type="search" placeholder="SEARCH&hellip;" autocomplete="off">
+          <span class="counter" id="browseCount">0 ITEMS</span>
+          <button class="btn" data-nav="wardrobe">&#9664; BACK</button>
+        </div>
+        <div class="dropzone" id="dropzone">
+          <div class="grid" id="browseGrid"></div>
+          <div class="emptystate" id="browseEmpty" hidden>
+            <p class="emptystate__big">YOUR CLOSET IS EMPTY</p>
+            <p>Drop photos here, or hit <b>UPLOAD</b>.</p>
+            <p class="emptystate__hint">Tip: shoot each piece flat on a plain bed,<br>floor or wall &mdash; the cutout comes out cleanest.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── LOOKBOOK ── -->
+      <section class="pane pane--lookbook" id="pane-lookbook" hidden>
+        <div class="toolbar">
+          <span class="toolbar__title">SAVED LOOKS</span>
+          <span class="counter" id="lookCount">0 LOOKS</span>
+          <button class="btn" data-nav="wardrobe">&#9664; BACK</button>
+        </div>
+        <div class="grid grid--looks" id="lookGrid"></div>
+        <div class="emptystate" id="lookEmpty" hidden>
+          <p class="emptystate__big">NO LOOKS SAVED YET</p>
+          <p>Build an outfit, then hit <b>SAVE LOOK</b>.</p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ══ TRAY BAR ══ -->
+    <footer class="traybar">
+      <div class="traybar__items" id="trayItems"></div>
+      <button class="plate plate--tray" id="trayMore">MORE &#9654;</button>
+    </footer>
+
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<div class="modalwrap" id="modalWrap" hidden>
+
+  <!-- Cutout / magic wand editor -->
+  <div class="window window--cutout" id="cutoutWin" hidden>
+    <div class="window__bar">
+      <span class="window__title">MAGIC WAND &mdash; <span id="cutoutName">ITEM</span></span>
+      <button class="window__x" data-close="cutout">&times;</button>
+    </div>
+    <div class="window__body cutout">
+      <div class="cutout__stage">
+        <div class="checkerboard">
+          <canvas id="cutoutCanvas"></canvas>
+          <canvas id="brushCursor" class="brushcursor"></canvas>
+        </div>
+        <div class="cutout__busy" id="cutoutBusy" hidden><span>WORKING&hellip;</span></div>
+      </div>
+      <div class="cutout__panel">
+        <fieldset class="group">
+          <legend>ENGINE</legend>
+          <div class="segmented" id="engineMode">
+            <button class="seg is-on" data-engine="ai" title="Neural cutout, runs on your machine">SMART</button>
+            <button class="seg" data-engine="classic" title="Colour flood fill — only good on plain backgrounds">BASIC</button>
+          </div>
+          <div id="aiOpts">
+            <label class="slider">
+              <span>CUTOFF <b id="cutoffVal">50</b></span>
+              <input type="range" id="cutoff" min="10" max="90" value="50">
+            </label>
+            <p class="hint">Lower keeps more of the garment,<br>higher trims tighter.</p>
+          </div>
+          <div id="classicOpts" hidden>
+            <label class="slider">
+              <span>TOLERANCE <b id="tolVal">24</b></span>
+              <input type="range" id="tolerance" min="4" max="90" value="24">
+            </label>
+            <label class="slider">
+              <span>FEATHER <b id="featherVal">1</b></span>
+              <input type="range" id="feather" min="0" max="4" value="1">
+            </label>
+            <label class="check"><input type="checkbox" id="despeckle" checked> DESPECKLE</label>
+          </div>
+          <button class="btn btn--wide" id="rerunCut">&#9851; RE-CUT</button>
+        </fieldset>
+        <fieldset class="group">
+          <legend>BRUSH</legend>
+          <div class="segmented" id="brushMode">
+            <button class="seg is-on" data-mode="erase">ERASE</button>
+            <button class="seg" data-mode="restore">RESTORE</button>
+          </div>
+          <label class="slider">
+            <span>SIZE <b id="brushVal">28</b></span>
+            <input type="range" id="brushSize" min="4" max="120" value="28">
+          </label>
+          <button class="btn btn--wide" id="undoBrush">&#8630; UNDO</button>
+        </fieldset>
+        <fieldset class="group">
+          <legend>NO CUTOUT</legend>
+          <label class="check"><input type="checkbox" id="useOriginal"> USE ORIGINAL</label>
+          <p class="hint">Skip the cutout entirely and keep<br>the photo exactly as it is.</p>
+        </fieldset>
+        <div class="cutout__actions">
+          <button class="btn btn--hot btn--wide" id="cutoutSave">KEEP IT</button>
+          <button class="btn btn--wide" data-close="cutout">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Item details -->
+  <div class="window window--item" id="itemWin" hidden>
+    <div class="window__bar">
+      <span class="window__title">ITEM DETAILS</span>
+      <button class="window__x" data-close="item">&times;</button>
+    </div>
+    <div class="window__body item">
+      <div class="item__preview checkerboard"><img id="itemPreview" alt=""></div>
+      <div class="item__form">
+        <label class="row"><span>NAME</span><input class="field" id="itemName" maxlength="40"></label>
+        <label class="row"><span>LAYER</span><select class="field" id="itemLayer"></select></label>
+        <div class="row row--stack"><span>SEASON</span><div class="chips" id="itemSeasons"></div></div>
+        <div class="row row--stack"><span>OCCASION</span><div class="chips" id="itemOccasions"></div></div>
+        <div class="row row--stack"><span>COLORS</span><div class="swatches" id="itemSwatches"></div></div>
+        <div class="item__actions">
+          <button class="btn btn--hot" id="itemSave">SAVE</button>
+          <button class="btn" id="itemRecut">&#9851; RE-CUT</button>
+          <button class="btn btn--danger" id="itemDelete">DELETE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm -->
+  <div class="window window--confirm" id="confirmWin" hidden>
+    <div class="window__bar">
+      <span class="window__title" id="confirmTitle">ARE YOU SURE?</span>
+    </div>
+    <div class="window__body confirm">
+      <p id="confirmMsg">As if!</p>
+      <div class="confirm__actions">
+        <button class="btn btn--danger" id="confirmYes">YES</button>
+        <button class="btn" id="confirmNo">NEVER MIND</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toaster" id="toaster"></div>
+<div class="crt" id="crt" aria-hidden="true"></div>
+
+<!-- adds COOP/COEP on static hosts (GitHub Pages) so the cutout model
+     can run multi-threaded; no-ops locally where serve.ps1 sets them -->
+<script src="coi-serviceworker.js"></script>
+<script src="vendor/ort/ort.wasm.min.js"></script>
+<script src="js/util.js"></script>
+<script src="js/texture.js"></script>
+<script src="js/db.js"></script>
+<script src="js/cutout.js"></script>
+<script src="js/segment.js"></script>
+<script src="js/match.js"></script>
+<script src="js/store.js"></script>
+<script src="js/screens.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# scratch photos used while testing the cutout — not ours to publish
+_testimages/
+
+# optional drop-in model, not shipped (see README)
+vendor/models/rmbg-1.4/
+
+# editor / OS noise
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

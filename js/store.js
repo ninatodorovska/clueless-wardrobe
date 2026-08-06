@@ -40,28 +40,52 @@ var Store = (function () {
   }
 
   /* ── boot ────────────────────────────────────────────── */
+
+  /* top, bottom, shoes is the outfit you actually get dressed in,
+     so all three rails are on out of the box. Everything else stays
+     behind the tray bar. */
+  var DEFAULT_ACTIVE = ['TOP', 'BOTTOM', 'SHOES'];
+
+  /* Bumped whenever DEFAULT_ACTIVE gains a rail, so closets saved
+     before the change pick it up once — without overriding it again
+     if the rail is later switched off on purpose.
+       1: TOP + BOTTOM
+       2: SHOES added */
+  var LAYOUT_VERSION = 2;
+
   function init() {
     return DB.open().then(function () {
       return Promise.all([
         DB.all('items'),
         DB.all('outfits'),
-        DB.getMeta('active', ['TOP', 'BOTTOM']),
-        DB.getMeta('season', 'ALL')
+        DB.getMeta('active', DEFAULT_ACTIVE.slice()),
+        DB.getMeta('season', 'ALL'),
+        DB.getMeta('layoutV', 1)
       ]);
     }).then(function (r) {
       state.items = (r[0] || []).sort(function (a, b) { return b.createdAt - a.createdAt; });
       state.outfits = (r[1] || []).sort(function (a, b) { return b.createdAt - a.createdAt; });
       state.active = sanitizeActive(r[2]);
       state.season = r[3] || 'ALL';
+
+      var seen = r[4] || 1;
+      if (seen < LAYOUT_VERSION) {
+        DEFAULT_ACTIVE.forEach(function (id) {
+          if (state.active.indexOf(id) < 0) state.active.push(id);
+        });
+        DB.setMeta('active', state.active);
+        DB.setMeta('layoutV', LAYOUT_VERSION);
+      }
+
       emit('ready');
       emit('change');
     });
   }
 
   function sanitizeActive(list) {
-    if (!Array.isArray(list) || !list.length) return ['TOP', 'BOTTOM'];
+    if (!Array.isArray(list) || !list.length) return DEFAULT_ACTIVE.slice();
     var clean = list.filter(function (id) { return LAYER_IDS.indexOf(id) >= 0; });
-    return clean.length ? clean : ['TOP', 'BOTTOM'];
+    return clean.length ? clean : DEFAULT_ACTIVE.slice();
   }
 
   function layer(id) {

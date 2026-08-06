@@ -42,7 +42,7 @@ powershell -ExecutionPolicy Bypass -File serve.ps1 -Port 9001
 | **◀ ▶** | Flip through a rail. You can also swipe/drag the garment, or use arrow keys. |
 | **DRESS ME** | Builds a whole outfit for you, scored so the colours actually work. |
 | **🔒** | Lock a rail so DRESS ME keeps that piece and shuffles the rest. |
-| **The tray bar** | Turns extra rails on and off — outerwear, shoes, bags, jewelry, scarves, dresses. |
+| **The tray bar** | Turns extra rails on and off — outerwear, bags, jewelry, scarves, dresses. Shoes is on by default; switch it off here if you don't want it. |
 | **FALL FASHIONS** | Click the title plate to filter the whole closet by season. |
 | **SAVE LOOK / LOOKBOOK** | Keep outfits and flip back through them later. |
 

@@ -44,9 +44,11 @@ powershell -ExecutionPolicy Bypass -File serve.ps1 -Port 9001
 | **🔒** | Lock a rail so DRESS ME keeps that piece and shuffles the rest. |
 | **The tray bar** | Turns extra rails on and off — outerwear, bags, jewelry, scarves, dresses. Shoes is on by default; switch it off here if you don't want it. |
 | **FALL FASHIONS** | Click the title plate to filter the whole closet by season. |
+| **PAPER** | Change the wallpaper. Swipe the swatch or pick from the grid — it changes as you go. Ten prints: leopard, Cher's yellow plaid, pink checks, zebra, polka dot and more. |
 | **SAVE LOOK / LOOKBOOK** | Keep outfits and flip back through them later. |
 
-Keyboard: `D` dress me · `S` save look · `B` browse · `L` lookbook · `Esc` close a window.
+Keyboard: `D` dress me · `S` save look · `B` browse · `L` lookbook · `W` wallpaper ·
+`Esc` close a window.
 
 ### Getting good cutouts
 
@@ -103,7 +105,7 @@ css/
   app.css           screen shell, rails, browse, lookbook
 js/
   util.js           helpers, colour maths, blob/canvas plumbing
-  texture.js        generates the leopard wallpaper procedurally at boot
+  patterns.js       the wallpaper catalogue and how each print tiles
   db.js             IndexedDB, with an in-memory fallback
   segment.js        u2netp neural cutout  ← the real engine
   cutout.js         colour flood-fill cutout (BASIC fallback)
@@ -111,6 +113,7 @@ js/
   store.js          items, looks, rails, selection, filters
   screens.js        rendering and the magic-wand editor
   app.js            boot, routing, wiring
+assets/wallpapers/  the ten prints, 800px JPEGs (~1 MB the lot)
 vendor/             onnxruntime-web + the u2netp model (~16 MB)
 ```
 

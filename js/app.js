@@ -6,6 +6,60 @@ var App = (function () {
 
   var $ = U.$, $$ = U.$$, el = U.el;
   var route = 'wardrobe';
+  var paperId = 'leopard';        /* current wallpaper */
+
+  /* ── wallpaper ───────────────────────────────────────── */
+  function setPaper(id, save) {
+    var def = Patterns.byId(id);
+    if (!def) return;
+    paperId = def.id;
+    Patterns.apply(paperId);
+    var name = $('#paperName');
+    if (name) name.textContent = def.label;
+    var prev = $('#paperPreview');
+    if (prev) {
+      var lay = Patterns.layout(paperId);
+      prev.style.backgroundImage = 'url(' + Patterns.get(paperId) + ')';
+      prev.style.backgroundSize = lay.size === 'cover' ? 'cover' : '150px auto';
+      prev.style.backgroundRepeat = lay.repeat;
+    }
+    $$('#paperGrid .swatchbtn').forEach(function (b) {
+      b.classList.toggle('is-on', b.getAttribute('data-paper') === paperId);
+    });
+    if (save !== false) DB.setMeta('paper', paperId);
+  }
+
+  function stepPaper(delta) {
+    var list = Patterns.list;
+    var i = Patterns.indexOf(paperId);
+    setPaper(list[((i + delta) % list.length + list.length) % list.length].id);
+  }
+
+  function buildPaperGrid() {
+    var host = $('#paperGrid');
+    if (!host || host.childNodes.length) return;
+    Patterns.list.forEach(function (p) {
+      host.appendChild(el('button', {
+        class: 'swatchbtn',
+        'data-paper': p.id,
+        title: p.label,
+        onclick: function () { setPaper(p.id); }
+      }));
+    });
+    Patterns.list.forEach(function (p) {
+      var b = $('#paperGrid .swatchbtn[data-paper="' + p.id + '"]');
+      if (b) {
+        b.style.backgroundImage = 'url(' + Patterns.get(p.id) + ')';
+        b.style.backgroundSize = p.mode === 'cover' ? 'cover' : '56px auto';
+      }
+    });
+  }
+
+  function openPaper() {
+    buildPaperGrid();
+    Screens.showWindow('paperWin');
+    setPaper(paperId, false);
+  }
 
   /* ── routing ─────────────────────────────────────────── */
   function go(name) {
@@ -92,6 +146,37 @@ var App = (function () {
     });
   }
 
+  /* drag the swatch sideways to flip through prints */
+  function wirePaperSwipe() {
+    var pad = $('#paperPreview');
+    var startX = 0, dragging = false, moved = 0;
+
+    pad.addEventListener('pointerdown', function (e) {
+      dragging = true; moved = 0; startX = e.clientX;
+      pad.setPointerCapture(e.pointerId);
+    });
+    pad.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      moved = e.clientX - startX;
+      pad.style.transform = 'translateX(' + (moved * 0.3) + 'px)';
+    });
+    function end(e) {
+      if (!dragging) return;
+      dragging = false;
+      pad.style.transform = '';
+      if (Math.abs(moved) > 34) stepPaper(moved < 0 ? 1 : -1);
+      if (e && e.pointerId != null && pad.hasPointerCapture(e.pointerId)) {
+        pad.releasePointerCapture(e.pointerId);
+      }
+    }
+    pad.addEventListener('pointerup', end);
+    pad.addEventListener('pointercancel', end);
+    pad.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { stepPaper(1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft')  { stepPaper(-1); e.preventDefault(); }
+    });
+  }
+
   /* ── drag & drop ─────────────────────────────────────── */
   function wireDropzone() {
     var dz = $('#dropzone');
@@ -141,6 +226,12 @@ var App = (function () {
       var off = document.body.classList.toggle('no-crt');
       DB.setMeta('noCrt', off);
     });
+
+    /* wallpaper picker */
+    $('#paperBtn').addEventListener('click', openPaper);
+    $('#paperPrev').addEventListener('click', function () { stepPaper(-1); });
+    $('#paperNext').addEventListener('click', function () { stepPaper(1); });
+    wirePaperSwipe();
 
     $('#dressMe').addEventListener('click', dressMe);
     $('#saveLook').addEventListener('click', saveLook);
@@ -196,6 +287,7 @@ var App = (function () {
       }
       if (e.key === 'b' || e.key === 'B') go(route === 'browse' ? 'wardrobe' : 'browse');
       if (e.key === 'l' || e.key === 'L') go(route === 'lookbook' ? 'wardrobe' : 'lookbook');
+      if (e.key === 'w' || e.key === 'W') openPaper();
     });
   }
 
@@ -217,7 +309,8 @@ var App = (function () {
 
   /* ── boot ────────────────────────────────────────────── */
   function boot() {
-    Texture.apply();
+    Patterns.apply(paperId);
+    Patterns.preload();
     buildFilters();
     wire();
     subscribe();
@@ -225,9 +318,11 @@ var App = (function () {
     setInterval(tickClock, 10000);
 
     Store.init().then(function () {
-      return DB.getMeta('noCrt', false);
-    }).then(function (off) {
+      return Promise.all([DB.getMeta('noCrt', false), DB.getMeta('paper', 'leopard')]);
+    }).then(function (r) {
+      var off = r[0];
       if (off) document.body.classList.add('no-crt');
+      if (r[1] && Patterns.byId(r[1])) setPaper(r[1], false);
       go('wardrobe');
 
       if (!DB.isPersistent()) {

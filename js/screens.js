@@ -111,10 +111,14 @@ var Screens = (function () {
 
     stage.innerHTML = '';
 
+    var caption = node.querySelector('.slot__caption');
+    caption.innerHTML = '';
+
     if (item) {
       stage.appendChild(el('img', { src: imgURL(item), alt: item.name }));
-      node.querySelector('.slot__caption').textContent =
-        item.name + '   ' + (idx + 1) + '/' + pool.length;
+      caption.appendChild(el('span', {
+        text: item.name + '  ' + (idx + 1) + '/' + pool.length
+      }));
       if (direction) {
         node.style.setProperty('--flip-from', (direction > 0 ? 26 : -26) + 'px');
         node.classList.remove('is-flip');
@@ -126,8 +130,7 @@ var Screens = (function () {
         class: 'slot__empty',
         text: pool.length ? 'tap ▶' : 'nothing here yet'
       }));
-      node.querySelector('.slot__caption').textContent =
-        pool.length ? pool.length + ' waiting' : '';
+      if (pool.length) caption.appendChild(el('span', { text: pool.length + ' waiting' }));
     }
 
     /* arrows off when the rail is empty */
@@ -292,6 +295,7 @@ var Screens = (function () {
     $('#modalWrap').hidden = true;
     $$('#modalWrap > .window').forEach(function (w) { w.hidden = true; });
   }
+  function showOnly(id) { showWindow(id); }
   function anyWindowOpen() { return !$('#modalWrap').hidden; }
 
   var confirmResolve = null;

@@ -18,6 +18,7 @@
       <div class="plate plate--title" id="titlePlate">CHER'S WARDROBE</div>
       <button class="plate plate--season" id="seasonPlate" title="Click to change season">FALL FASHIONS</button>
       <div class="titlebar__right">
+        <button class="plate plate--mini" id="paperBtn" title="Change the wallpaper">PAPER</button>
         <button class="plate plate--mini" id="crtToggle" title="Toggle CRT effect">CRT</button>
         <div class="plate plate--mini" id="clock">--:--</div>
       </div>
@@ -185,6 +186,25 @@
     </div>
   </div>
 
+  <!-- Wallpaper picker -->
+  <div class="window window--paper" id="paperWin" hidden>
+    <div class="window__bar">
+      <span class="window__title">WALLPAPER</span>
+      <button class="window__x" data-close="paper">&times;</button>
+    </div>
+    <div class="window__body paper">
+      <div class="paper__stage">
+        <button class="arrow" id="paperPrev" title="Previous">&#9664;</button>
+        <div class="paper__preview" id="paperPreview" tabindex="0"></div>
+        <button class="arrow" id="paperNext" title="Next">&#9654;</button>
+      </div>
+      <div class="paper__name" id="paperName">LEOPARD</div>
+      <p class="hint paper__hint">Swipe the swatch, or pick one below.<br>It changes as you go.</p>
+      <div class="paper__grid" id="paperGrid"></div>
+      <button class="btn btn--hot btn--wide" data-close="paper">DONE</button>
+    </div>
+  </div>
+
   <!-- Confirm -->
   <div class="window window--confirm" id="confirmWin" hidden>
     <div class="window__bar">
@@ -209,7 +229,7 @@
 <script src="coi-serviceworker.js"></script>
 <script src="vendor/ort/ort.wasm.min.js"></script>
 <script src="js/util.js"></script>
-<script src="js/texture.js"></script>
+<script src="js/patterns.js"></script>
 <script src="js/db.js"></script>
 <script src="js/cutout.js"></script>
 <script src="js/segment.js"></script>

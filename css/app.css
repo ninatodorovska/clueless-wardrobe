@@ -19,8 +19,10 @@
   border: 2px solid #23201c;
   border-radius: 6px;
   background-color: var(--leopard-bg);
-  background-image: var(--leopard-tile, none);
-  background-size: 300px 300px;
+  background-image: var(--paper-url, none);
+  background-size: var(--paper-size, 300px auto);
+  background-repeat: var(--paper-repeat, repeat);
+  background-position: center top;
   box-shadow:
     inset 0 0 0 2px #4a4038,
     inset 0 0 40px rgba(60,30,10,.35),
@@ -87,30 +89,43 @@ body.no-crt #crtToggle { opacity: .5; }
   display: flex;
   flex-direction: column;
 }
-/* Shoes are wide and short — a full-height rail just wraps them in
-   dead space and steals it from the tops and bottoms. */
-.slot[data-layer="SHOES"] {
-  flex-grow: .58;
-  min-height: 76px;
+/* Accessories are small, wide things — shoes, a bag, a necklace. A
+   full-height rail just wraps them in dead space and steals it from
+   the tops and bottoms, which are what you actually look at. */
+.slot[data-layer="SHOES"],
+.slot[data-layer="BAGS"],
+.slot[data-layer="JEWELRY"],
+.slot[data-layer="SCARVES"] {
+  flex-grow: .5;
+  min-height: 68px;
 }
 
 .slot__label {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   flex: 0 0 auto;
+}
+/* A halo isn't enough over real print scans — some are near-black,
+   some near-white. A small dark plate is legible on all of them and
+   matches the chrome the rest of the app already uses. */
+.slot__label > span,
+.slot__caption > span {
+  display: inline-block;
+  padding: 2px 9px;
   font-family: var(--display-font);
-  font-size: 11px;
-  letter-spacing: .26em;
+  font-size: 10px;
+  letter-spacing: .22em;
   text-transform: uppercase;
-  color: #2b1a0c;
-  /* a hard cream halo — the only thing that keeps small type
-     readable over a patterned wallpaper */
-  text-shadow:
-     0  1px 0 rgba(255,248,236,.95),  0 -1px 0 rgba(255,248,236,.95),
-     1px  0  0 rgba(255,248,236,.95), -1px  0 0 rgba(255,248,236,.95),
-     1px  1px 0 rgba(255,248,236,.8), -1px -1px 0 rgba(255,248,236,.8);
+  color: var(--bar-ink);
+  background: rgba(20, 16, 30, .72);
+  border: 1px solid rgba(0, 0, 0, .55);
+  border-radius: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .slot__lock,
 .slot__off {
@@ -178,14 +193,15 @@ body.no-crt #crtToggle { opacity: .5; }
   from { transform: translateX(var(--flip-from, 26px)) scale(.94); opacity: .25; }
 }
 .slot__empty {
+  padding: 3px 10px;
   font-family: var(--display-font);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: #6b543f;
-  text-shadow:
-     0  1px 0 rgba(255,248,236,.9),  0 -1px 0 rgba(255,248,236,.9),
-     1px  0  0 rgba(255,248,236,.9), -1px  0 0 rgba(255,248,236,.9);
+  color: #d8cfe4;
+  background: rgba(20, 16, 30, .55);
+  border: 1px solid rgba(0, 0, 0, .4);
+  border-radius: 2px;
   pointer-events: none;
 }
 
@@ -223,21 +239,12 @@ body.no-crt #crtToggle { opacity: .5; }
 
 .slot__caption {
   flex: 0 0 auto;
-  min-height: 15px;
+  min-height: 17px;
+  padding: 0 6px;
   text-align: center;
-  font-family: var(--display-font);
-  font-size: 11px;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: #2b1a0c;
-  text-shadow:
-     0  1px 0 rgba(255,248,236,.95),  0 -1px 0 rgba(255,248,236,.95),
-     1px  0  0 rgba(255,248,236,.95), -1px  0 0 rgba(255,248,236,.95),
-     1px  1px 0 rgba(255,248,236,.8), -1px -1px 0 rgba(255,248,236,.8);
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
+.slot__caption > span { letter-spacing: .14em; }
 
 /* ── foot: verdict + actions ── */
 .wardrobe__foot {
@@ -584,6 +591,73 @@ body.no-crt #crtToggle { opacity: .5; }
 .item__actions .btn { flex: 1 1 auto; font-size: 11px; }
 
 /* ═══════════════════════════════════════════════════════
+   WALLPAPER PICKER
+   ═══════════════════════════════════════════════════════ */
+.window--paper { width: min(430px, 100%); }
+.paper__stage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+.paper__preview {
+  flex: 1 1 auto;
+  height: 148px;
+  background-size: 150px auto;
+  background-position: center;
+  background-color: var(--leopard-bg);
+  border: 1px solid var(--edge-black);
+  box-shadow:
+    inset  1px  1px 0 0 var(--edge-dark),
+    inset -1px -1px 0 0 var(--edge-light);
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  transition: transform .14s ease-out;
+}
+.paper__preview:active { cursor: grabbing; }
+.paper__name {
+  margin-bottom: 4px;
+  text-align: center;
+  font-family: var(--display-font);
+  font-size: 15px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.paper__hint { text-align: center; margin-bottom: 10px; }
+
+.paper__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.swatchbtn {
+  aspect-ratio: 1;
+  padding: 0;
+  background-color: var(--leopard-bg);
+  background-size: 56px auto;
+  background-position: center;
+  border: 1px solid var(--edge-black);
+  box-shadow:
+    inset  1px  1px 0 0 var(--edge-light),
+    inset -1px -1px 0 0 var(--edge-dark);
+}
+.swatchbtn:hover { filter: brightness(1.08); }
+.swatchbtn.is-on {
+  box-shadow:
+    0 0 0 2px var(--hot),
+    inset  1px  1px 0 0 var(--edge-dark),
+    inset -1px -1px 0 0 var(--edge-light);
+}
+
+@media (max-width: 720px) {
+  .paper__grid { grid-template-columns: repeat(4, 1fr); }
+  .paper__preview { height: 118px; }
+}
+
+/* ═══════════════════════════════════════════════════════
    CONFIRM
    ═══════════════════════════════════════════════════════ */
 .window--confirm { width: min(380px, 100%); }
@@ -608,7 +682,10 @@ body.no-crt #crtToggle { opacity: .5; }
 }
 @media (max-height: 640px) {
   .slot { min-height: 112px; }
-  .slot[data-layer="SHOES"] { min-height: 68px; }
+  .slot[data-layer="SHOES"],
+  .slot[data-layer="BAGS"],
+  .slot[data-layer="JEWELRY"],
+  .slot[data-layer="SCARVES"] { min-height: 58px; }
   .arrow { height: 38px; }
   .btn--big { min-height: 38px; font-size: 16px; }
 }

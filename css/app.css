@@ -87,6 +87,12 @@ body.no-crt #crtToggle { opacity: .5; }
   display: flex;
   flex-direction: column;
 }
+/* Shoes are wide and short — a full-height rail just wraps them in
+   dead space and steals it from the tops and bottoms. */
+.slot[data-layer="SHOES"] {
+  flex-grow: .58;
+  min-height: 76px;
+}
 
 .slot__label {
   display: flex;
@@ -602,6 +608,7 @@ body.no-crt #crtToggle { opacity: .5; }
 }
 @media (max-height: 640px) {
   .slot { min-height: 112px; }
+  .slot[data-layer="SHOES"] { min-height: 68px; }
   .arrow { height: 38px; }
   .btn--big { min-height: 38px; font-size: 16px; }
 }

@@ -70,22 +70,12 @@ var App = (function () {
     if (name === 'browse') Screens.renderBrowse();
     if (name === 'lookbook') Screens.renderLookbook();
     if (name === 'wardrobe') Screens.renderWardrobe();
-    $('.traybar').hidden = (name !== 'wardrobe');
+    $$('.tab').forEach(function (t) {
+      t.classList.toggle('is-on', t.getAttribute('data-nav') === name);
+    });
   }
 
   /* ── title bar ───────────────────────────────────────── */
-  function tickClock() {
-    var d = new Date();
-    var hh = d.getHours(), mm = d.getMinutes();
-    var ampm = hh >= 12 ? 'PM' : 'AM';
-    hh = hh % 12; if (hh === 0) hh = 12;
-    $('#clock').textContent = hh + ':' + (mm < 10 ? '0' : '') + mm + ' ' + ampm;
-  }
-
-  function paintSeasonPlate() {
-    var s = Store.state.season;
-    $('#seasonPlate').textContent = (s === 'ALL' ? 'ALL' : s) + ' FASHIONS';
-  }
 
   /* ── DRESS ME ────────────────────────────────────────── */
   function dressMe() {
@@ -111,9 +101,6 @@ var App = (function () {
       if (best[L]) Store.select(L, best[L].id);
     });
     Screens.renderWardrobe();
-
-    var v = Match.score(Store.wornItems());
-    U.toast(v.value == null ? 'THERE YOU GO' : v.label);
   }
 
   /* ── SAVE LOOK ───────────────────────────────────────── */
@@ -217,14 +204,9 @@ var App = (function () {
       b.addEventListener('click', function () { go(b.getAttribute('data-nav')); });
     });
 
-    $('#seasonPlate').addEventListener('click', function () {
-      Store.cycleSeason();
-      U.toast(Store.state.season === 'ALL' ? 'SHOWING EVERYTHING' : Store.state.season + ' ONLY');
-    });
-
-    $('#crtToggle').addEventListener('click', function () {
-      var off = document.body.classList.toggle('no-crt');
-      DB.setMeta('noCrt', off);
+    $('#railsBtn').addEventListener('click', function () {
+      Screens.renderRails();
+      Screens.showWindow('railsWin');
     });
 
     /* wallpaper picker */
@@ -235,14 +217,7 @@ var App = (function () {
 
     $('#dressMe').addEventListener('click', dressMe);
     $('#saveLook').addEventListener('click', saveLook);
-    $('#clearLook').addEventListener('click', function () {
-      Store.clearSelection();
-      U.toast('RAILS CLEARED');
-    });
 
-    $('#trayMore').addEventListener('click', function () {
-      $('#trayItems').scrollBy({ left: 160, behavior: 'smooth' });
-    });
 
     /* upload */
     $('#uploadBtn').addEventListener('click', function () { $('#fileInput').click(); });
@@ -294,16 +269,14 @@ var App = (function () {
   /* ── store subscriptions ─────────────────────────────── */
   function subscribe() {
     Store.on('change', function () {
-      paintSeasonPlate();
       if (route === 'wardrobe') Screens.renderWardrobe();
       if (route === 'browse') Screens.renderBrowse();
       if (route === 'lookbook') Screens.renderLookbook();
-      Screens.renderTray();
+      if (!$('#railsWin').hidden) Screens.renderRails();
     });
 
     Store.on('select', function (p) {
       Screens.refreshSlot(p.layer, p.delta);
-      Screens.renderVerdict();
     });
   }
 
@@ -314,15 +287,11 @@ var App = (function () {
     buildFilters();
     wire();
     subscribe();
-    tickClock();
-    setInterval(tickClock, 10000);
 
     Store.init().then(function () {
-      return Promise.all([DB.getMeta('noCrt', false), DB.getMeta('paper', 'leopard')]);
-    }).then(function (r) {
-      var off = r[0];
-      if (off) document.body.classList.add('no-crt');
-      if (r[1] && Patterns.byId(r[1])) setPaper(r[1], false);
+      return DB.getMeta('paper', 'leopard');
+    }).then(function (saved) {
+      if (saved && Patterns.byId(saved)) setPaper(saved, false);
       go('wardrobe');
 
       if (!DB.isPersistent()) {

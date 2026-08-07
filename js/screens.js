@@ -19,22 +19,25 @@ var Screens = (function () {
      side. No box, no bevel, nothing competing with the clothes. */
   function buildSlot(layerId) {
     var def = Store.layer(layerId);
+    /* One caption line carries the rail name, the piece and the
+       position. The controls hide inside the stage until hover, so
+       at rest a rail is just the garment and one line of text. */
     var node = el('div', { class: 'slot', 'data-layer': layerId }, [
-      el('div', { class: 'slot__label' }, [
-        el('span', { text: def.label }),
-        el('button', {
-          class: 'slot__lock', title: 'Lock so DRESS ME keeps this piece', html: '&#128274;',
-          onclick: function (e) { e.stopPropagation(); Store.toggleLock(layerId); }
-        }),
-        def.core ? null : el('button', {
-          class: 'slot__off', title: 'Put this rail away', html: '&times;',
-          onclick: function (e) { e.stopPropagation(); Store.toggleLayer(layerId); }
-        })
-      ]),
       el('div', { class: 'slot__row' }, [
-        arrowBtn(layerId, -1, '&#9664;'),
-        el('div', { class: 'slot__stage', tabindex: '0' }),
-        arrowBtn(layerId, 1, '&#9654;')
+        arrowBtn(layerId, -1, '&#8249;'),
+        el('div', { class: 'slot__stage', tabindex: '0' }, [
+          el('div', { class: 'slot__tools' }, [
+            el('button', {
+              class: 'slot__lock', title: 'Lock so DRESS ME keeps this piece', html: '&#128274;',
+              onclick: function (e) { e.stopPropagation(); Store.toggleLock(layerId); }
+            }),
+            def.core ? null : el('button', {
+              class: 'slot__off', title: 'Put this rail away', html: '&times;',
+              onclick: function (e) { e.stopPropagation(); Store.toggleLayer(layerId); }
+            })
+          ])
+        ]),
+        arrowBtn(layerId, 1, '&#8250;')
       ]),
       el('div', { class: 'slot__caption' })
     ]);
@@ -49,7 +52,45 @@ var Screens = (function () {
       html: glyph,
       'data-step': delta,
       title: delta > 0 ? 'Next' : 'Previous',
+      'aria-label': delta > 0 ? 'Next' : 'Previous',
       onclick: function () { Store.step(layerId, delta); }
+    });
+  }
+
+  /* ── the rails menu, replacing the old tray bar ── */
+  function renderRails() {
+    /* season lives here too: both answer "what am I styling with" */
+    var seasons = $('#seasonChips');
+    if (seasons) {
+      seasons.innerHTML = '';
+      ['ALL'].concat(Store.SEASONS).forEach(function (s) {
+        seasons.appendChild(el('button', {
+          class: 'chip' + (Store.state.season === s ? ' is-on' : ''),
+          text: s === 'ALL' ? 'any' : s.toLowerCase(),
+          onclick: function () { Store.setSeason(s); renderRails(); }
+        }));
+      });
+    }
+
+    var host = $('#railsList');
+    if (!host) return;
+    host.innerHTML = '';
+    Store.LAYERS.forEach(function (L) {
+      var on = Store.state.active.indexOf(L.id) >= 0;
+      var n = Store.pool(L.id).length;
+      host.appendChild(el('button', {
+        class: 'railrow' + (on ? ' is-on' : '') + (L.core ? ' is-locked' : ''),
+        title: L.core ? 'Always shown' : (on ? 'Hide this rail' : 'Show this rail'),
+        onclick: function () {
+          if (L.core) return;
+          Store.toggleLayer(L.id);
+          renderRails();
+        }
+      }, [
+        el('span', { class: 'railrow__tick', html: '&#10003;' }),
+        el('span', { text: L.label.toLowerCase() }),
+        el('span', { class: 'railrow__n', text: n ? String(n) : '—' })
+      ]));
     });
   }
 
@@ -102,35 +143,42 @@ var Screens = (function () {
     var pool = Store.pool(layerId);
     var item = Store.current(layerId);
     var idx = Store.indexOf(layerId);
+    var def = Store.layer(layerId);
     var stage = node.querySelector('.slot__stage');
+    var tools = node.querySelector('.slot__tools');
 
     /* lock lamp */
     var lock = node.querySelector('.slot__lock');
     lock.classList.toggle('is-on', !!Store.state.locks[layerId]);
     lock.hidden = !item;
 
-    stage.innerHTML = '';
+    /* wipe the stage but keep the tools node */
+    $$('img, .slot__empty', stage).forEach(function (n) { n.remove(); });
 
     var caption = node.querySelector('.slot__caption');
     caption.innerHTML = '';
 
+    var label = def.label.toLowerCase();
+
     if (item) {
-      stage.appendChild(el('img', { src: imgURL(item), alt: item.name }));
+      stage.insertBefore(el('img', { src: imgURL(item), alt: item.name }), tools);
+      caption.appendChild(el('span', { class: 'cap__rail', text: label }));
       caption.appendChild(el('span', {
-        text: item.name + '  ' + (idx + 1) + '/' + pool.length
+        class: 'cap__name',
+        text: item.name.toLowerCase() + (pool.length > 1 ? '  ' + (idx + 1) + '/' + pool.length : '')
       }));
       if (direction) {
-        node.style.setProperty('--flip-from', (direction > 0 ? 26 : -26) + 'px');
+        node.style.setProperty('--flip-from', (direction > 0 ? 22 : -22) + 'px');
         node.classList.remove('is-flip');
         void node.offsetWidth;
         node.classList.add('is-flip');
       }
     } else {
-      stage.appendChild(el('div', {
+      stage.insertBefore(el('div', {
         class: 'slot__empty',
-        text: pool.length ? 'tap ▶' : 'nothing here yet'
-      }));
-      if (pool.length) caption.appendChild(el('span', { text: pool.length + ' waiting' }));
+        text: pool.length ? label + ' — tap ›' : label + ' — nothing yet'
+      }), tools);
+      caption.appendChild(el('span', { class: 'cap__rail', text: label }));
     }
 
     /* arrows off when the rail is empty */
@@ -147,35 +195,6 @@ var Screens = (function () {
       want.forEach(function (L) { stack.appendChild(buildSlot(L)); });
     }
     want.forEach(function (L) { refreshSlot(L); });
-    renderVerdict();
-    renderTray();
-  }
-
-  function renderVerdict() {
-    var box = $('#verdict');
-    var worn = Store.wornItems();
-    var v = Match.score(worn);
-    box.className = 'verdict ' + (v.mood || '');
-    box.querySelector('.verdict__text').textContent =
-      v.value == null
-        ? (worn.length ? 'PICK ONE MORE PIECE…' : 'READY WHEN YOU ARE')
-        : v.label + '  (' + v.value + ')';
-  }
-
-  function renderTray() {
-    var host = $('#trayItems');
-    host.innerHTML = '';
-    Store.LAYERS.forEach(function (L) {
-      if (L.core) return;
-      var on = Store.state.active.indexOf(L.id) >= 0;
-      var n = Store.pool(L.id).length;
-      host.appendChild(el('button', {
-        class: 'tray' + (on ? ' is-on' : ''),
-        title: (on ? 'Hide' : 'Show') + ' the ' + L.label.toLowerCase() + ' rail (' + n + ')',
-        onclick: function () { Store.toggleLayer(L.id); },
-        html: L.label + '<span class="tray__dot"></span>'
-      }));
-    });
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -211,18 +230,40 @@ var Screens = (function () {
     }
   }
 
+  /* select a piece from the browse grid without leaving it, so you
+     can build a whole look in one pass through the closet */
+  function wearFromBrowse(id) {
+    var it = Store.wearItem(id);
+    if (!it) return;
+    var card = $('.card[data-id="' + id + '"]');
+    if (card) {
+      card.classList.remove('is-worn');
+      void card.offsetWidth;
+      card.classList.add('is-worn');
+    }
+    U.toast('ON THE ' + (Store.layer(it.layer) || {}).label + ' RAIL');
+  }
+
   function itemCard(it) {
     var swatches = (it.colors || []).slice(0, 3).map(function (c) {
       return el('span', { class: 'swatch', style: 'background:' + U.rgbCss(c) });
     });
     return el('div', {
-      class: 'card',
+      class: 'card' + (Store.current(it.layer) === it ? ' is-on' : ''),
+      'data-id': it.id,
       title: 'Edit ' + it.name,
       onclick: function () { openItem(it.id); }
     }, [
       el('div', { class: 'card__thumb' }, [
         el('img', { src: imgURL(it), alt: it.name, loading: 'lazy' }),
-        el('span', { class: 'card__badge', text: Store.layer(it.layer) ? Store.layer(it.layer).label : it.layer })
+        el('span', { class: 'card__badge', text: Store.layer(it.layer) ? Store.layer(it.layer).label : it.layer }),
+        /* straight onto the rail, without opening anything */
+        el('button', {
+          class: 'card__wear',
+          title: 'Put this on',
+          html: '&#43;',
+          onclick: function (e) { e.stopPropagation(); wearFromBrowse(it.id); }
+        })
       ]),
       el('div', { class: 'card__body' }, [
         el('div', { class: 'card__name', text: it.name }),
@@ -688,6 +729,15 @@ var Screens = (function () {
   }
 
   function wireItem() {
+    $('#itemWear').addEventListener('click', function () {
+      if (!openItemId) return;
+      var it = Store.wearItem(openItemId);
+      if (!it) return;
+      closeWindows();
+      App.go('wardrobe');
+      U.toast('WEARING ' + it.name);
+    });
+
     $('#itemSave').addEventListener('click', function () {
       if (!openItemId) return;
       Store.updateItem(openItemId, {
@@ -830,8 +880,7 @@ var Screens = (function () {
   return {
     renderWardrobe: renderWardrobe,
     refreshSlot: refreshSlot,
-    renderVerdict: renderVerdict,
-    renderTray: renderTray,
+    renderRails: renderRails,
     renderBrowse: renderBrowse,
     renderLookbook: renderLookbook,
     openItem: openItem,

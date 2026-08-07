@@ -271,6 +271,21 @@ var Store = (function () {
     });
   }
 
+  /* put one piece on: open its rail if it's hidden, then select it */
+  function wearItem(id) {
+    var it = getItem(id);
+    if (!it) return null;
+    if (state.active.indexOf(it.layer) < 0) {
+      state.active.push(it.layer);
+      DB.setMeta('active', state.active);
+    }
+    /* a dress replaces top and bottom, so retire them the same way
+       the tray toggle does rather than leaving a contradictory rail */
+    state.selection[it.layer] = it.id;
+    emit('change');
+    return it;
+  }
+
   function wearOutfit(o) {
     var need = [];
     Object.keys(o.slots).forEach(function (L) {
@@ -295,6 +310,7 @@ var Store = (function () {
     current: current, indexOf: indexOf, step: step, select: select,
     clearSelection: clearSelection, toggleLock: toggleLock, wornItems: wornItems,
     addItem: addItem, updateItem: updateItem, deleteItem: deleteItem, getItem: getItem,
-    saveOutfit: saveOutfit, deleteOutfit: deleteOutfit, wearOutfit: wearOutfit
+    saveOutfit: saveOutfit, deleteOutfit: deleteOutfit,
+    wearOutfit: wearOutfit, wearItem: wearItem
   };
 })();

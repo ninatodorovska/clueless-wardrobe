@@ -13,17 +13,6 @@
 <div class="bezel">
   <div class="screen" id="screen">
 
-    <!-- ══ TITLE BAR ══ -->
-    <header class="titlebar">
-      <div class="plate plate--title" id="titlePlate">CHER'S WARDROBE</div>
-      <button class="plate plate--season" id="seasonPlate" title="Click to change season">FALL FASHIONS</button>
-      <div class="titlebar__right">
-        <button class="plate plate--mini" id="paperBtn" title="Change the wallpaper">PAPER</button>
-        <button class="plate plate--mini" id="crtToggle" title="Toggle CRT effect">CRT</button>
-        <div class="plate plate--mini" id="clock">--:--</div>
-      </div>
-    </header>
-
     <!-- ══ VIEWPORT ══ -->
     <div class="viewport" id="viewport">
 
@@ -32,18 +21,9 @@
         <div class="slotstack" id="slotStack"></div>
 
         <div class="wardrobe__foot">
-          <div class="verdict" id="verdict">
-            <span class="verdict__lamp"></span>
-            <span class="verdict__text">READY</span>
-          </div>
           <div class="actionrow">
-            <button class="btn btn--big" data-nav="browse">BROWSE</button>
-            <button class="btn btn--big btn--hot" id="dressMe">DRESS ME</button>
-          </div>
-          <div class="actionrow actionrow--sub">
-            <button class="btn" id="saveLook">SAVE LOOK</button>
-            <button class="btn" data-nav="lookbook">LOOKBOOK</button>
-            <button class="btn" id="clearLook">CLEAR</button>
+            <button class="btn btn--big" id="dressMe" title="Style a random outfit">DRESS ME</button>
+            <button class="btn btn--big btn--hot" id="saveLook" title="Keep this look">SAVE LOOK</button>
           </div>
         </div>
       </section>
@@ -51,19 +31,19 @@
       <!-- ── BROWSE ── -->
       <section class="pane pane--browse" id="pane-browse" hidden>
         <div class="toolbar">
-          <button class="btn btn--hot" id="uploadBtn">&#65291; UPLOAD</button>
+          <button class="btn btn--hot" id="uploadBtn">&#65291; upload</button>
           <input type="file" id="fileInput" accept="image/*" multiple hidden>
           <select class="field" id="filterLayer" title="Filter by layer"></select>
           <select class="field" id="filterSeason" title="Filter by season"></select>
-          <input class="field field--search" id="searchBox" type="search" placeholder="SEARCH&hellip;" autocomplete="off">
-          <span class="counter" id="browseCount">0 ITEMS</span>
-          <button class="btn" data-nav="wardrobe">&#9664; BACK</button>
+          <input class="field field--search" id="searchBox" type="search" placeholder="search&hellip;" autocomplete="off">
+          <span class="counter" id="browseCount">0 items</span>
+          <button class="btn" data-nav="wardrobe">&#9664; back</button>
         </div>
         <div class="dropzone" id="dropzone">
           <div class="grid" id="browseGrid"></div>
           <div class="emptystate" id="browseEmpty" hidden>
-            <p class="emptystate__big">YOUR CLOSET IS EMPTY</p>
-            <p>Drop photos here, or hit <b>UPLOAD</b>.</p>
+            <p class="emptystate__big">your closet is empty</p>
+            <p>Drop photos here, or hit <b>upload</b>.</p>
             <p class="emptystate__hint">Tip: shoot each piece flat on a plain bed,<br>floor or wall &mdash; the cutout comes out cleanest.</p>
           </div>
         </div>
@@ -72,24 +52,68 @@
       <!-- ── LOOKBOOK ── -->
       <section class="pane pane--lookbook" id="pane-lookbook" hidden>
         <div class="toolbar">
-          <span class="toolbar__title">SAVED LOOKS</span>
-          <span class="counter" id="lookCount">0 LOOKS</span>
-          <button class="btn" data-nav="wardrobe">&#9664; BACK</button>
+          <span class="toolbar__title">saved looks</span>
+          <span class="counter" id="lookCount">0 looks</span>
+          <button class="btn" data-nav="wardrobe">&#9664; back</button>
         </div>
         <div class="grid grid--looks" id="lookGrid"></div>
         <div class="emptystate" id="lookEmpty" hidden>
-          <p class="emptystate__big">NO LOOKS SAVED YET</p>
-          <p>Build an outfit, then hit <b>SAVE LOOK</b>.</p>
+          <p class="emptystate__big">no looks saved yet</p>
+          <p>Build an outfit, then hit <b>save look</b>.</p>
         </div>
       </section>
 
     </div>
 
-    <!-- ══ TRAY BAR ══ -->
-    <footer class="traybar">
-      <div class="traybar__items" id="trayItems"></div>
-      <button class="plate plate--tray" id="trayMore">MORE &#9654;</button>
-    </footer>
+    <!-- ══ BOTTOM BAR — the only navigation ══ -->
+    <nav class="tabbar" id="tabbar">
+      <div class="tabbar__nav">
+        <button class="tab" data-nav="wardrobe" aria-label="Styling">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 7.2a2.1 2.1 0 1 1 2.1-2.1"/><path d="M12 7.2v2.1"/>
+            <path d="m12 9.3-8.4 6.1a1 1 0 0 0 .6 1.8h15.6a1 1 0 0 0 .6-1.8L12 9.3Z"/>
+          </svg>
+          <span>styling</span>
+        </button>
+        <button class="tab" data-nav="browse" aria-label="Closet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.4" y="3.4" width="7.2" height="7.2" rx="1.3"/>
+            <rect x="13.4" y="3.4" width="7.2" height="7.2" rx="1.3"/>
+            <rect x="3.4" y="13.4" width="7.2" height="7.2" rx="1.3"/>
+            <rect x="13.4" y="13.4" width="7.2" height="7.2" rx="1.3"/>
+          </svg>
+          <span>closet</span>
+        </button>
+        <button class="tab" data-nav="lookbook" aria-label="Looks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6.4 3.6h11.2a1 1 0 0 1 1 1v15.8l-6.6-3.9-6.6 3.9V4.6a1 1 0 0 1 1-1Z"/>
+          </svg>
+          <span>looks</span>
+        </button>
+      </div>
+
+      <div class="tabbar__tools">
+        <button class="tabtool" id="railsBtn" title="Rails and season" aria-label="Rails and season">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" aria-hidden="true">
+            <path d="M4 7h5M15 7h5M4 12h11M19 12h1M4 17h3M13 17h7"/>
+            <circle cx="12" cy="7" r="2.1"/><circle cx="17" cy="12" r="2.1"/><circle cx="10" cy="17" r="2.1"/>
+          </svg>
+          <span>rails</span>
+        </button>
+        <button class="tabtool" id="paperBtn" title="Wallpaper" aria-label="Wallpaper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.4" y="3.4" width="10" height="10" rx="1.4"/>
+            <path d="M17 8.6h2.6a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V17"/>
+          </svg>
+          <span>paper</span>
+        </button>
+      </div>
+    </nav>
 
   </div>
 </div>
@@ -100,7 +124,7 @@
   <!-- Cutout / magic wand editor -->
   <div class="window window--cutout" id="cutoutWin" hidden>
     <div class="window__bar">
-      <span class="window__title">MAGIC WAND &mdash; <span id="cutoutName">ITEM</span></span>
+      <span class="window__title">magic wand &mdash; <span id="cutoutName">item</span></span>
       <button class="window__x" data-close="cutout">&times;</button>
     </div>
     <div class="window__body cutout">
@@ -109,55 +133,55 @@
           <canvas id="cutoutCanvas"></canvas>
           <canvas id="brushCursor" class="brushcursor"></canvas>
         </div>
-        <div class="cutout__busy" id="cutoutBusy" hidden><span>WORKING&hellip;</span></div>
+        <div class="cutout__busy" id="cutoutBusy" hidden><span>working&hellip;</span></div>
       </div>
       <div class="cutout__panel">
         <fieldset class="group">
-          <legend>ENGINE</legend>
+          <legend>engine</legend>
           <div class="segmented" id="engineMode">
-            <button class="seg is-on" data-engine="ai" title="Neural cutout, runs on your machine">SMART</button>
-            <button class="seg" data-engine="classic" title="Colour flood fill — only good on plain backgrounds">BASIC</button>
+            <button class="seg is-on" data-engine="ai" title="Neural cutout, runs on your machine">smart</button>
+            <button class="seg" data-engine="classic" title="Colour flood fill — only good on plain backgrounds">basic</button>
           </div>
           <div id="aiOpts">
             <label class="slider">
-              <span>CUTOFF <b id="cutoffVal">50</b></span>
+              <span>cutoff <b id="cutoffVal">50</b></span>
               <input type="range" id="cutoff" min="10" max="90" value="50">
             </label>
             <p class="hint">Lower keeps more of the garment,<br>higher trims tighter.</p>
           </div>
           <div id="classicOpts" hidden>
             <label class="slider">
-              <span>TOLERANCE <b id="tolVal">24</b></span>
+              <span>tolerance <b id="tolVal">24</b></span>
               <input type="range" id="tolerance" min="4" max="90" value="24">
             </label>
             <label class="slider">
-              <span>FEATHER <b id="featherVal">1</b></span>
+              <span>feather <b id="featherVal">1</b></span>
               <input type="range" id="feather" min="0" max="4" value="1">
             </label>
-            <label class="check"><input type="checkbox" id="despeckle" checked> DESPECKLE</label>
+            <label class="check"><input type="checkbox" id="despeckle" checked> despeckle</label>
           </div>
-          <button class="btn btn--wide" id="rerunCut">&#9851; RE-CUT</button>
+          <button class="btn btn--wide" id="rerunCut">&#9851; re-cut</button>
         </fieldset>
         <fieldset class="group">
-          <legend>BRUSH</legend>
+          <legend>brush</legend>
           <div class="segmented" id="brushMode">
-            <button class="seg is-on" data-mode="erase">ERASE</button>
-            <button class="seg" data-mode="restore">RESTORE</button>
+            <button class="seg is-on" data-mode="erase">erase</button>
+            <button class="seg" data-mode="restore">restore</button>
           </div>
           <label class="slider">
-            <span>SIZE <b id="brushVal">28</b></span>
+            <span>size <b id="brushVal">28</b></span>
             <input type="range" id="brushSize" min="4" max="120" value="28">
           </label>
-          <button class="btn btn--wide" id="undoBrush">&#8630; UNDO</button>
+          <button class="btn btn--wide" id="undoBrush">&#8630; undo</button>
         </fieldset>
         <fieldset class="group">
-          <legend>NO CUTOUT</legend>
-          <label class="check"><input type="checkbox" id="useOriginal"> USE ORIGINAL</label>
+          <legend>no cutout</legend>
+          <label class="check"><input type="checkbox" id="useOriginal"> use original</label>
           <p class="hint">Skip the cutout entirely and keep<br>the photo exactly as it is.</p>
         </fieldset>
         <div class="cutout__actions">
-          <button class="btn btn--hot btn--wide" id="cutoutSave">KEEP IT</button>
-          <button class="btn btn--wide" data-close="cutout">CANCEL</button>
+          <button class="btn btn--hot btn--wide" id="cutoutSave">keep it</button>
+          <button class="btn btn--wide" data-close="cutout">cancel</button>
         </div>
       </div>
     </div>
@@ -166,23 +190,44 @@
   <!-- Item details -->
   <div class="window window--item" id="itemWin" hidden>
     <div class="window__bar">
-      <span class="window__title">ITEM DETAILS</span>
+      <span class="window__title">item details</span>
       <button class="window__x" data-close="item">&times;</button>
     </div>
     <div class="window__body item">
       <div class="item__preview checkerboard"><img id="itemPreview" alt=""></div>
       <div class="item__form">
-        <label class="row"><span>NAME</span><input class="field" id="itemName" maxlength="40"></label>
-        <label class="row"><span>LAYER</span><select class="field" id="itemLayer"></select></label>
-        <div class="row row--stack"><span>SEASON</span><div class="chips" id="itemSeasons"></div></div>
-        <div class="row row--stack"><span>OCCASION</span><div class="chips" id="itemOccasions"></div></div>
-        <div class="row row--stack"><span>COLORS</span><div class="swatches" id="itemSwatches"></div></div>
+        <label class="row"><span>name</span><input class="field" id="itemName" maxlength="40"></label>
+        <label class="row"><span>layer</span><select class="field" id="itemLayer"></select></label>
+        <div class="row row--stack"><span>season</span><div class="chips" id="itemSeasons"></div></div>
+        <div class="row row--stack"><span>occasion</span><div class="chips" id="itemOccasions"></div></div>
+        <div class="row row--stack"><span>colors</span><div class="swatches" id="itemSwatches"></div></div>
+        <button class="btn btn--hot btn--wide" id="itemWear">wear this</button>
         <div class="item__actions">
-          <button class="btn btn--hot" id="itemSave">SAVE</button>
-          <button class="btn" id="itemRecut">&#9851; RE-CUT</button>
-          <button class="btn btn--danger" id="itemDelete">DELETE</button>
+          <button class="btn" id="itemSave">save</button>
+          <button class="btn" id="itemRecut">&#9851; re-cut</button>
+          <button class="btn btn--danger" id="itemDelete">delete</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Which rails are on screen -->
+  <div class="window window--rails" id="railsWin" hidden>
+    <div class="window__bar">
+      <span class="window__title">rails &amp; season</span>
+      <button class="window__x" data-close="rails">&times;</button>
+    </div>
+    <div class="window__body rails">
+      <fieldset class="group">
+        <legend>season</legend>
+        <div class="chips" id="seasonChips"></div>
+      </fieldset>
+      <fieldset class="group">
+        <legend>rails</legend>
+        <p class="hint">Top and bottom always show. Add whatever else<br>you want to style today.</p>
+        <div class="rails__list" id="railsList"></div>
+      </fieldset>
+      <button class="btn btn--wide" data-close="rails">done</button>
     </div>
   </div>
 
@@ -213,8 +258,8 @@
     <div class="window__body confirm">
       <p id="confirmMsg">As if!</p>
       <div class="confirm__actions">
-        <button class="btn btn--danger" id="confirmYes">YES</button>
-        <button class="btn" id="confirmNo">NEVER MIND</button>
+        <button class="btn btn--danger" id="confirmYes">yes</button>
+        <button class="btn" id="confirmNo">never mind</button>
       </div>
     </div>
   </div>

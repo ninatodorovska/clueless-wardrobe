@@ -85,7 +85,7 @@ var U = (function () {
     return [h, s, l];
   }
 
-  /* rough human name for a color — used for tagging + the match verdict */
+  /* rough human name for a color — used for tagging and search */
   var HUES = [
     [15,  'RED'], [45,  'ORANGE'], [70,  'YELLOW'], [160, 'GREEN'],
     [200, 'TEAL'], [250, 'BLUE'], [290, 'PURPLE'], [335, 'PINK'], [360, 'RED']

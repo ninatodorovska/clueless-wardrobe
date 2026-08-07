@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   BASE — reset, palette, typography, CRT overlay
+   BASE — reset, palette, typography
    ═══════════════════════════════════════════════════════ */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -16,118 +16,120 @@ body {
 }
 img { display: block; max-width: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; }
+button { cursor: pointer; background: none; border: 0; }
 h1,h2,h3,p,fieldset,legend { margin: 0; padding: 0; }
 fieldset { border: 0; }
 [hidden] { display: none !important; }
 
 :root {
-  /* ── type ── */
-  --ui-font: "Tahoma", "Verdana", "Geneva", "DejaVu Sans", sans-serif;
-  --display-font: "Franklin Gothic Medium", "Arial Narrow", "Haettenschweiler", Impact, sans-serif;
-  --mono-font: "Lucida Console", "Consolas", monospace;
+  /* ── type ──
+     One grotesque for everything, with a tighter condensed face
+     reserved for the few display moments. */
+  --ui-font: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --display-font: "Franklin Gothic Medium", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
 
-  /* ── chrome greys (Win95 bevel language) ── */
-  --face:        #cfcac4;
-  --face-lit:    #e8e5e1;
-  --face-dim:    #a9a29a;
-  --edge-light:  #ffffff;
-  --edge-dark:   #6f6862;
-  --edge-black:  #2a2622;
+  /* ── surfaces ──
+     Warm paper greys, not Win95 putty. */
+  --paper:       #ffffff;
+  --face:        #f4f1ec;
+  --face-lit:    #faf8f5;
+  --face-dim:    #e7e2da;
 
-  /* ── the dark console bar ── */
-  --bar:         #1b1626;
-  --bar-lit:     #2e2740;
-  --bar-ink:     #ffe9c9;
+  --line:        #d9d2c8;
+  --line-strong: #b9b0a3;
 
-  /* ── Clueless palette ── */
-  --hot:         #ff2d95;
-  --hot-dim:     #c31f70;
-  --pink:        #ff8fc0;
-  --plaid:       #f2c43d;
-  --plaid-deep:  #c8941a;
+  /* bevel edges — buttons keep the raised, pressable feel */
+  --edge-lit:    #ffffff;
+  --edge-shade:  #ada395;
+  --edge-out:    #6f6759;
+
+  /* ── the title bar ── */
+  --bar:         #221d2b;
+  --bar-line:    rgba(255,255,255,.16);
+  --bar-ink:     rgba(255,255,255,.72);
+  --bar-ink-dim: rgba(255,255,255,.42);
+
+  /* ── one accent, and one alarm ── */
+  --accent:      #e4356f;
+  --accent-lit:  #f04d82;
+  --accent-dim:  #c32659;
+  --danger:      #c0392b;
+  --danger-soft: #e0a49d;
+
+  /* ── ink ── */
+  --ink:         #241f26;
+  --ink-soft:    #6a6069;
+  --ink-faint:   #9a9098;
+
   --leopard-bg:  #e2bd93;
-  --leopard-mid: #c07f45;
-  --leopard-ink: #4a2c16;
-  --mint:        #8fe3c8;
-  --lav:         #b6a4e8;
 
-  --ink:         #1a1613;
-  --ink-soft:    #5b524a;
-  --danger:      #d03024;
-
-  --panel-w: 340px;
-  --radius: 2px;
+  --panel-w: 360px;
+  --radius: 3px;
 }
 
-/* ═══ CRT / filmed-off-a-monitor overlay ═══ */
+/* ═══ CRT — filmed-off-a-monitor overlay ═══
+   Dialled well back from the original: the scanlines are half the
+   contrast and the phosphor band is barely there, so it reads as
+   texture on the wallpaper without muddying the garments. */
 .crt {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 9000;
-  opacity: 1;
-  transition: opacity .25s;
-  background:
-    /* vignette */
-    radial-gradient(120% 100% at 50% 50%,
-      rgba(0,0,0,0) 52%,
-      rgba(0,0,0,.20) 82%,
-      rgba(0,0,0,.48) 100%);
+  background: radial-gradient(125% 105% at 50% 50%,
+    rgba(0,0,0,0) 58%,
+    rgba(0,0,0,.13) 86%,
+    rgba(0,0,0,.34) 100%);
 }
 .crt::before {
-  /* scanlines */
   content: "";
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(0,0,0,.16) 0px,
-    rgba(0,0,0,.16) 1px,
-    rgba(255,255,255,.03) 1px,
-    rgba(255,255,255,.03) 3px);
-  mix-blend-mode: multiply;
+    rgba(0,0,0,.085) 0px,
+    rgba(0,0,0,.085) 1px,
+    rgba(255,255,255,.022) 1px,
+    rgba(255,255,255,.022) 3px);
 }
 .crt::after {
-  /* rolling refresh band + phosphor bloom */
   content: "";
   position: absolute;
   left: 0; right: 0;
-  height: 28%;
+  height: 26%;
   background: linear-gradient(to bottom,
     rgba(255,255,255,0) 0%,
-    rgba(255,255,255,.045) 50%,
+    rgba(255,255,255,.032) 50%,
     rgba(255,255,255,0) 100%);
-  animation: roll 7.5s linear infinite;
+  animation: roll 9s linear infinite;
 }
 @keyframes roll {
-  from { top: -30%; }
+  from { top: -28%; }
   to   { top: 100%; }
 }
-body.no-crt .crt { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .crt::after { animation: none; opacity: .35; }
+}
+
+/* ═══ scrollbars ═══ */
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 100px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background-clip: content-box; background-color: var(--ink-faint); }
+
+::selection { background: var(--accent); color: #fff; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .crt::after { animation: none; opacity: .3; }
-}
-
-/* ═══ scrollbars, period-correct ═══ */
-* { scrollbar-width: thin; scrollbar-color: var(--face-dim) var(--face-lit); }
-::-webkit-scrollbar { width: 16px; height: 16px; }
-::-webkit-scrollbar-track {
-  background: repeating-conic-gradient(var(--face-lit) 0% 25%, var(--face) 0% 50%) 0 0/4px 4px;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--face);
-  border: 1px solid var(--edge-black);
-  box-shadow: inset 1px 1px 0 var(--edge-light), inset -1px -1px 0 var(--edge-dark);
-}
-::-webkit-scrollbar-thumb:active { background: var(--face-dim); }
-::-webkit-scrollbar-corner { background: var(--face); }
-
-::selection { background: var(--hot); color: #fff; }
-
-/* focus that fits the era */
-:focus-visible {
-  outline: 2px dotted var(--ink);
-  outline-offset: 1px;
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }

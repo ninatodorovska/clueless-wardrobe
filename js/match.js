@@ -1,6 +1,11 @@
 /* ═══════════════════════════════════════════════════════
-   MATCH — colour extraction, outfit scoring, and the
-   verdict lamp. "It does not go with that jacket."
+   MATCH — colour extraction, and the quiet colour sense
+   behind DRESS ME.
+
+   Deliberately silent: the app never rates an outfit or
+   comments on what you put together. The harmony score exists
+   only so DRESS ME picks something decent instead of pure
+   noise, and is never surfaced.
    ═══════════════════════════════════════════════════════ */
 var Match = (function () {
   'use strict';
@@ -61,10 +66,13 @@ var Match = (function () {
     return d > 180 ? 360 - d : d;
   }
 
-  /* ── score a set of items 0..100 ─────────────────────── */
-  function score(items) {
+  /* ── how well a set of colours sits together, 0..100 ───
+     Used only to bias DRESS ME toward combinations that work.
+     It is never shown, never scored on screen, and never
+     comments on what you picked yourself.                    */
+  function harmony(items) {
     var worn = items.filter(Boolean);
-    if (worn.length < 2) return { value: null, label: 'READY', mood: '' };
+    if (worn.length < 2) return null;
 
     /* one representative colour per garment */
     var colors = worn.map(function (it) {
@@ -78,14 +86,8 @@ var Match = (function () {
       else chromatic.push(c);
     });
 
-    /* all neutrals — safe, chic, slightly boring */
-    if (!chromatic.length) {
-      return verdict(82, 'ALL NEUTRALS. VERY CLASSIC.');
-    }
-    /* one colour against neutrals — the Cher formula */
-    if (chromatic.length === 1) {
-      return verdict(92, U.colorName(chromatic[0]) + ' + NEUTRALS. PERFECT.');
-    }
+    if (!chromatic.length) return 82;      /* all neutrals */
+    if (chromatic.length === 1) return 92; /* one colour against neutrals */
 
     var pts = 0, pairs = 0;
     for (var i = 0; i < chromatic.length; i++) {
@@ -108,43 +110,7 @@ var Match = (function () {
     if (neutrals >= 1) base += 8;
     if (neutrals >= 2) base += 4;
 
-    base = U.clamp(Math.round(base), 0, 100);
-    return verdict(base, null, chromatic);
-  }
-
-  var GOOD = [
-    'TOTALLY MATCHES.',
-    'THAT IS A FULL-ON TEN.',
-    'OUTFIT: CERTIFIED.',
-    'YOU LOOK CLASSIC.'
-  ];
-  var OKAY = [
-    "IT'S CUTE. NOT CLASSIC, BUT CUTE.",
-    'SOLID. YOU COULD PUSH IT FURTHER.',
-    'THIS WORKS. BARELY, BUT IT WORKS.'
-  ];
-  var MEH = [
-    "THAT'S A LOT OF LOOK.",
-    'RISKY. BUT YOU ARE BRAVE.',
-    'HMM. TRY SWAPPING THE TOP.'
-  ];
-  var BAD = [
-    'UGH, AS IF!',
-    'MAJOR CLASH.',
-    'ABSOLUTELY NOT. RE-ROLL.'
-  ];
-
-  function verdict(value, forced, chromatic) {
-    var label, mood;
-    if (value >= 78)      { mood = 'is-good'; label = forced || U.pick(GOOD); }
-    else if (value >= 58) { mood = 'is-good'; label = forced || U.pick(OKAY); }
-    else if (value >= 40) { mood = 'is-meh';  label = forced || U.pick(MEH); }
-    else                  { mood = 'is-bad';  label = forced || U.pick(BAD); }
-
-    if (!forced && chromatic && chromatic.length === 2 && value < 58) {
-      label = U.colorName(chromatic[0]) + ' + ' + U.colorName(chromatic[1]) + '? ' + label;
-    }
-    return { value: value, label: label, mood: mood };
+    return U.clamp(Math.round(base), 0, 100);
   }
 
   /* ── DRESS ME: sample combinations, keep the best ─────
@@ -169,8 +135,8 @@ var Match = (function () {
         chosen.push(it);
       }
       if (chosen.length < 2) return pickSet;      /* nothing to optimise */
-      var s = score(chosen);
-      var v = s.value == null ? 50 : s.value;
+      var h = harmony(chosen);
+      var v = h == null ? 50 : h;
       /* a little randomness so it doesn't hand you the same look forever */
       v += Math.random() * 6;
       if (v > bestScore) { bestScore = v; best = pickSet; }
@@ -181,7 +147,6 @@ var Match = (function () {
 
   return {
     dominant: dominant,
-    score: score,
     isNeutral: isNeutral,
     bestOutfit: bestOutfit
   };

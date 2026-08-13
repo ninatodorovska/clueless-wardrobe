@@ -138,7 +138,8 @@ var Screens = (function () {
 
   function refreshSlot(layerId, direction) {
     var node = $('.slot[data-layer="' + layerId + '"]');
-    if (!node) return;
+    /* the rail might live in the side strip instead */
+    if (!node) { refreshSideTile(layerId); return; }
 
     var pool = Store.pool(layerId);
     var item = Store.current(layerId);
@@ -185,16 +186,78 @@ var Screens = (function () {
     $$('.arrow', node).forEach(function (b) { b.disabled = !pool.length; });
   }
 
+  /* ── accessory tile for the side strip ── */
+  function buildSideTile(layerId) {
+    var def = Store.layer(layerId);
+    var node = el('div', { class: 'sidetile', 'data-layer': layerId }, [
+      el('div', { class: 'sidetile__stage', tabindex: '0' }, [
+        el('button', {
+          class: 'sidetile__nav sidetile__nav--prev', html: '&#8249;',
+          title: 'Previous', 'aria-label': 'Previous ' + def.label.toLowerCase(),
+          onclick: function (e) { e.stopPropagation(); Store.step(layerId, -1); }
+        }),
+        el('button', {
+          class: 'sidetile__nav sidetile__nav--next', html: '&#8250;',
+          title: 'Next', 'aria-label': 'Next ' + def.label.toLowerCase(),
+          onclick: function (e) { e.stopPropagation(); Store.step(layerId, 1); }
+        }),
+        el('button', {
+          class: 'sidetile__off', html: '&times;',
+          title: 'Put this rail away',
+          onclick: function (e) { e.stopPropagation(); Store.toggleLayer(layerId); }
+        })
+      ]),
+      el('div', { class: 'sidetile__label', text: def.label.toLowerCase() })
+    ]);
+    wireSwipe(node.querySelector('.sidetile__stage'), layerId);
+    return node;
+  }
+
+  function refreshSideTile(layerId) {
+    var node = $('.sidetile[data-layer="' + layerId + '"]');
+    if (!node) return;
+    var pool = Store.pool(layerId);
+    var item = Store.current(layerId);
+    var stage = node.querySelector('.sidetile__stage');
+
+    $$('img, .sidetile__empty', stage).forEach(function (n) { n.remove(); });
+
+    if (item) {
+      stage.insertBefore(el('img', { src: imgURL(item), alt: item.name, title: item.name }),
+        stage.firstChild);
+      node.setAttribute('title', item.name);
+    } else {
+      stage.insertBefore(el('div', {
+        class: 'sidetile__empty', html: pool.length ? '&#43;' : '&ndash;'
+      }), stage.firstChild);
+      node.removeAttribute('title');
+    }
+    $$('.sidetile__nav', node).forEach(function (b) { b.disabled = !pool.length; });
+    node.classList.toggle('is-empty', !item);
+  }
+
   function renderWardrobe() {
     var stack = $('#slotStack');
-    var want = Store.visibleLayers();
-    var have = $$('.slot', stack).map(function (n) { return n.getAttribute('data-layer'); });
+    var rail = $('#sideRail');
+    var main = Store.mainLayers();
+    var side = Store.sideLayers();
 
-    if (want.join('|') !== have.join('|')) {
+    var have = $$('.slot', stack).map(function (n) { return n.getAttribute('data-layer'); });
+    if (main.join('|') !== have.join('|')) {
       stack.innerHTML = '';
-      want.forEach(function (L) { stack.appendChild(buildSlot(L)); });
+      main.forEach(function (L) { stack.appendChild(buildSlot(L)); });
     }
-    want.forEach(function (L) { refreshSlot(L); });
+
+    var haveSide = $$('.sidetile', rail).map(function (n) { return n.getAttribute('data-layer'); });
+    if (side.join('|') !== haveSide.join('|')) {
+      rail.innerHTML = '';
+      side.forEach(function (L) { rail.appendChild(buildSideTile(L)); });
+    }
+    rail.hidden = !side.length;
+    $('#pane-wardrobe').classList.toggle('has-side', side.length > 0);
+
+    main.forEach(function (L) { refreshSlot(L); });
+    side.forEach(function (L) { refreshSideTile(L); });
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -436,6 +499,23 @@ var Screens = (function () {
     return r;
   }
 
+  /* Look at the cut-out and file it. The filename wins when it says
+     something ("denim jacket.jpg"), because that's the person telling
+     us directly; the model only fills the gap left by IMG_2043.jpg. */
+  function autoFile(cut) {
+    if (!CE.pending || CE.pending.namedByHand) return;
+    if (!cut || typeof Classify === 'undefined') return;
+
+    Classify.guess(cut).then(function (g) {
+      if (!g || !CE.pending) return;
+      if (!CE.pending.layerFromName) CE.pending.layer = g.layer;
+      if (!CE.pending.nameFromFile)  CE.pending.name = g.name;
+      var label = (Store.layer(CE.pending.layer) || {}).label || CE.pending.layer;
+      U.toast('looks like ' + CE.pending.name.toLowerCase() +
+              ' — filed under ' + label.toLowerCase());
+    });
+  }
+
   function ceRun() {
     ceBusy(true, 'WORKING…');
 
@@ -459,6 +539,7 @@ var Screens = (function () {
       CE.history = [];
       cePaint();
       ceBusy(false);
+      autoFile(r.cut);
       if (r.engine === 'ai' && r.failed) {
         U.toast('COULD NOT FIND A GARMENT — TRY A LOWER CUTOFF', true, 3600);
       }
@@ -792,7 +873,7 @@ var Screens = (function () {
     [/\b(shoes?|boots?|heels?|sneakers?|trainers?|loafers?|sandals?|pumps?|flats?|mules?|clogs?|wedges?|mary\s*janes?)\b/i, 'SHOES'],
     [/\b(bag|purse|clutch|tote|backpack|handbag)\b/i, 'BAGS'],
     [/\b(necklace|earring|earrings|bracelet|ring|choker|jewel|jewelry|jewellery)\b/i, 'JEWELRY'],
-    [/\b(scarf|scarves|shawl|bandana|belt|hat|beret|headband)\b/i, 'SCARVES'],
+    [/\b(scarf|scarves|shawl|bandana|belt|hat|beret|headband)\b/i, 'JEWELRY'],
     [/\b(skirt|pant|pants|jean|jeans|trouser|trousers|short|shorts|legging|leggings)\b/i, 'BOTTOM'],
     [/\b(top|shirt|tee|t-shirt|blouse|sweater|knit|tank|cami|crop|hoodie)\b/i, 'TOP']
   ];
@@ -845,18 +926,23 @@ var Screens = (function () {
     }).then(function (blob) {
       srcBlob = blob;
       var guessed = guessLayer(file.name);
-      /* when the name tells us nothing, TOP is the safest guess —
-         landing in OUTERWEAR just because that rail happened to be
-         open first is more surprising than helpful */
-      var fallback = 'TOP';
+      /* a camera filename (IMG_2043, PXL_2024…) carries nothing, so
+         don't let it block the model's guess at the name */
+      /* trailing digit groups repeat: PXL_20240612_101500 -> "PXL 20240612 101500" */
+      var generic = /^(img|image|photo|pic|pxl|dsc|dscn|scr|screenshot|untitled|whatsapp)([\s_-]*\d+)*$/i;
+      var pretty = niceName(file.name);
+      var fromFile = !generic.test(pretty);
 
       return openCutout({
         src: src,
         srcBlob: srcBlob,
-        title: (single ? '' : pos + ' OF ' + queueTotal + ' — ') + niceName(file.name),
+        title: (single ? '' : pos + ' OF ' + queueTotal + ' — ') + pretty,
         pending: {
-          name: niceName(file.name),
-          layer: guessed || fallback,
+          name: pretty,
+          /* when nothing tells us otherwise, TOP is the safest rail */
+          layer: guessed || 'TOP',
+          layerFromName: !!guessed,
+          nameFromFile: fromFile,
           season: Store.state.season === 'ALL' ? [] : [Store.state.season]
         },
         onDone: function (item) {

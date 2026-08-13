@@ -5,18 +5,21 @@ var Store = (function () {
   'use strict';
 
   /* ── the rails in Cher's closet ───────────────────────
-     `core` slots are always on screen; the rest are toggled
-     from the tray bar along the bottom, exactly like the
-     SHOES / JEWELRY / SCARVES row in the film.            */
+     `core` rails are always on screen; the rest are toggled from
+     the settings panel.
+
+     `side: true` keeps a rail out of the main column and puts it in
+     the strip down the right instead. Stacking every rail in one
+     lineup shrinks the outfit until you can't read it — the pieces
+     that make the silhouette get the height, accessories get a tile. */
   var LAYERS = [
-    { id: 'OUTERWEAR', label: 'OUTERWEAR', core: false },
+    { id: 'OUTERWEAR', label: 'OUTERWEAR', core: false, side: true },
     { id: 'TOP',       label: 'TOP',       core: true  },
     { id: 'DRESS',     label: 'DRESSES',   core: false, solo: true },
     { id: 'BOTTOM',    label: 'BOTTOM',    core: true  },
     { id: 'SHOES',     label: 'SHOES',     core: false },
-    { id: 'BAGS',      label: 'BAGS',      core: false },
-    { id: 'JEWELRY',   label: 'JEWELRY',   core: false },
-    { id: 'SCARVES',   label: 'SCARVES',   core: false }
+    { id: 'BAGS',      label: 'BAGS',      core: false, side: true },
+    { id: 'JEWELRY',   label: 'JEWELRY',   core: false, side: true }
   ];
   var LAYER_IDS = LAYERS.map(function (l) { return l.id; });
 
@@ -53,6 +56,22 @@ var Store = (function () {
        2: SHOES added */
   var LAYOUT_VERSION = 2;
 
+  /* Rails that no longer exist, and where their pieces should land.
+     Without this, an item keeps a dead layer: it vanishes from every
+     rail, and the item panel silently re-files it on the next save. */
+  var RETIRED = { SCARVES: 'JEWELRY' };
+
+  function migrateLayers() {
+    var moved = state.items.filter(function (it) {
+      return LAYER_IDS.indexOf(it.layer) < 0;
+    });
+    if (!moved.length) return Promise.resolve(0);
+    return Promise.all(moved.map(function (it) {
+      it.layer = RETIRED[it.layer] || 'TOP';
+      return DB.put('items', it);
+    })).then(function () { return moved.length; });
+  }
+
   function init() {
     return DB.open().then(function () {
       return Promise.all([
@@ -77,6 +96,8 @@ var Store = (function () {
         DB.setMeta('layoutV', LAYOUT_VERSION);
       }
 
+      return migrateLayers();
+    }).then(function () {
       emit('ready');
       emit('change');
     });
@@ -101,6 +122,15 @@ var Store = (function () {
       act = act.filter(function (id) { return id !== 'TOP' && id !== 'BOTTOM'; });
     }
     return LAYERS.filter(function (l) { return act.indexOf(l.id) >= 0; }).map(function (l) { return l.id; });
+  }
+
+  /* the silhouette — gets the main column */
+  function mainLayers() {
+    return visibleLayers().filter(function (id) { return !layer(id).side; });
+  }
+  /* accessories — get the strip down the side */
+  function sideLayers() {
+    return visibleLayers().filter(function (id) { return !!layer(id).side; });
   }
 
   function toggleLayer(id) {
@@ -304,7 +334,8 @@ var Store = (function () {
     state: state,
     on: on, emit: emit,
     init: init,
-    layer: layer, visibleLayers: visibleLayers, toggleLayer: toggleLayer,
+    layer: layer, visibleLayers: visibleLayers,
+    mainLayers: mainLayers, sideLayers: sideLayers, toggleLayer: toggleLayer,
     setSeason: setSeason, cycleSeason: cycleSeason,
     pool: pool, pools: pools,
     current: current, indexOf: indexOf, step: step, select: select,

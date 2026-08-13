@@ -55,9 +55,11 @@ var App = (function () {
     });
   }
 
-  function openPaper() {
+  /* one panel for everything that isn't a garment */
+  function openSettings() {
+    Screens.renderRails();
     buildPaperGrid();
-    Screens.showWindow('paperWin');
+    Screens.showWindow('settingsWin');
     setPaper(paperId, false);
   }
 
@@ -204,13 +206,7 @@ var App = (function () {
       b.addEventListener('click', function () { go(b.getAttribute('data-nav')); });
     });
 
-    $('#railsBtn').addEventListener('click', function () {
-      Screens.renderRails();
-      Screens.showWindow('railsWin');
-    });
-
-    /* wallpaper picker */
-    $('#paperBtn').addEventListener('click', openPaper);
+    $('#settingsBtn').addEventListener('click', openSettings);
     $('#paperPrev').addEventListener('click', function () { stepPaper(-1); });
     $('#paperNext').addEventListener('click', function () { stepPaper(1); });
     wirePaperSwipe();
@@ -262,7 +258,8 @@ var App = (function () {
       }
       if (e.key === 'b' || e.key === 'B') go(route === 'browse' ? 'wardrobe' : 'browse');
       if (e.key === 'l' || e.key === 'L') go(route === 'lookbook' ? 'wardrobe' : 'lookbook');
-      if (e.key === 'w' || e.key === 'W') openPaper();
+      /* not 's' — that already saves the look on the wardrobe screen */
+      if (e.key === ',') openSettings();
     });
   }
 
@@ -272,7 +269,7 @@ var App = (function () {
       if (route === 'wardrobe') Screens.renderWardrobe();
       if (route === 'browse') Screens.renderBrowse();
       if (route === 'lookbook') Screens.renderLookbook();
-      if (!$('#railsWin').hidden) Screens.renderRails();
+      if (!$('#settingsWin').hidden) Screens.renderRails();
     });
 
     Store.on('select', function (p) {

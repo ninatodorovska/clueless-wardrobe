@@ -62,10 +62,9 @@
   flex-direction: column;
   gap: 8px;
 }
-.slot[data-layer="SHOES"],
-.slot[data-layer="BAGS"],
-.slot[data-layer="JEWELRY"],
-.slot[data-layer="SCARVES"] {
+/* shoes is the only accessory left in the main column — bags and
+   jewelry live in the side strip now */
+.slot[data-layer="SHOES"] {
   flex-grow: .5;
   min-height: 68px;
 }
@@ -413,9 +412,10 @@
 .emptystate__hint { margin-top: 16px; font-size: 11px; color: var(--ink-faint); }
 
 /* ═══════════════════════════════════════════════════════
-   RAILS PICKER
+   SETTINGS — season, rails and wallpaper in one panel
    ═══════════════════════════════════════════════════════ */
-.window--rails { width: min(320px, 100%); }
+.window--settings { width: min(400px, 100%); max-height: min(88vh, 780px); }
+.settings .group:last-of-type { margin-bottom: 18px; }
 .rails__list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 16px; }
 .railrow {
   display: flex;
@@ -526,11 +526,10 @@
 /* ═══════════════════════════════════════════════════════
    WALLPAPER PICKER
    ═══════════════════════════════════════════════════════ */
-.window--paper { width: min(420px, 100%); }
-.paper__stage { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.paper__stage { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .paper__preview {
   flex: 1 1 auto;
-  height: 140px;
+  height: 116px;
   background-size: 150px auto;
   background-position: center;
   background-color: var(--leopard-bg);
@@ -552,7 +551,7 @@
   color: var(--ink);
 }
 .paper__hint { text-align: center; }
-.paper__grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-bottom: 16px; }
+.paper__grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
 .swatchbtn {
   aspect-ratio: 1;
   padding: 0;
@@ -575,6 +574,128 @@
 .confirm__actions .btn { flex: 1 1 auto; }
 
 /* ═══════════════════════════════════════════════════════
+   SIDE STRIP — accessories, so they don't crush the outfit
+   ═══════════════════════════════════════════════════════ */
+.siderail {
+  position: absolute;
+  right: 8px;
+  top: 54px;
+  bottom: 10px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 2px;
+}
+.siderail::-webkit-scrollbar { width: 0; }
+
+.sidetile { flex: 0 0 auto; width: 62px; }
+.sidetile__stage {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .66);
+  border-radius: 5px;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+.sidetile__stage:active { cursor: grabbing; }
+.sidetile__stage img {
+  max-width: 82%;
+  max-height: 82%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(1px 2px 3px rgba(40,24,10,.25));
+  transition: transform .16s ease-out, opacity .16s;
+}
+.sidetile__stage.is-swiping img { transition: none; }
+.sidetile.is-empty .sidetile__stage { background: rgba(255,255,255,.34); }
+.sidetile__empty {
+  font-size: 17px;
+  color: rgba(40, 30, 20, .45);
+  pointer-events: none;
+}
+
+/* the two halves that flip through the rail */
+.sidetile__nav {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 42%;
+  display: grid;
+  place-items: center;
+  padding-bottom: 3px;
+  font-size: 18px;
+  line-height: 1;
+  color: #fff;
+  background: rgba(28, 22, 34, .42);
+  opacity: 0;
+  transition: opacity .12s;
+}
+.sidetile__nav--prev { left: 0; border-radius: 5px 0 0 5px; }
+.sidetile__nav--next { right: 0; border-radius: 0 5px 5px 0; }
+.sidetile__stage:hover .sidetile__nav,
+.sidetile__nav:focus-visible { opacity: 1; }
+.sidetile__nav:hover { background: rgba(28, 22, 34, .72); }
+.sidetile__nav:disabled { opacity: 0 !important; }
+
+.sidetile__off {
+  position: absolute;
+  top: 2px; right: 2px;
+  width: 16px; height: 16px;
+  display: grid; place-items: center;
+  font-size: 10px;
+  line-height: 1;
+  color: #fff;
+  background: rgba(28, 22, 34, .6);
+  border-radius: 100px;
+  opacity: 0;
+  transition: opacity .12s, background .12s;
+}
+.sidetile__stage:hover .sidetile__off { opacity: 1; }
+.sidetile__off:hover { background: var(--danger); }
+
+.sidetile__label {
+  margin-top: 3px;
+  text-align: center;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 0 2px rgba(0,0,0,.6);
+}
+
+/* keep the outfit column clear of the strip */
+.pane--wardrobe.has-side .slotstack,
+.pane--wardrobe.has-side .wardrobe__foot { padding-right: 84px; }
+
+/* On touch these can't hide behind hover, so keep them as narrow edge
+   strips rather than half-tile slabs — otherwise they sit on top of
+   the very accessory you're trying to look at. */
+@media (hover: none) {
+  .sidetile__nav {
+    opacity: 1;
+    width: 24%;
+    font-size: 14px;
+    color: rgba(255,255,255,.92);
+  }
+  .sidetile__nav--prev {
+    background: linear-gradient(to right, rgba(28,22,34,.5), rgba(28,22,34,0));
+  }
+  .sidetile__nav--next {
+    background: linear-gradient(to left, rgba(28,22,34,.5), rgba(28,22,34,0));
+  }
+  .sidetile__off { opacity: .5; }
+}
+
+/* ═══════════════════════════════════════════════════════
    BOTTOM BAR — the only navigation, every screen size.
    Nav on the left, the two utility panels on the right.
    ═══════════════════════════════════════════════════════ */
@@ -589,7 +710,26 @@
   z-index: 6;
 }
 .tabbar__nav { display: flex; flex: 1 1 auto; }
-.tabbar__tools { display: flex; margin-left: auto; }
+
+/* ── settings floats in the top corner, over the wallpaper ── */
+.floatbtn {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: 10px;
+  z-index: 7;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(28, 22, 34, .5);
+  border-radius: 100px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .14s, transform .14s;
+}
+.floatbtn svg { width: 19px; height: 19px; }
+.floatbtn:hover { background: rgba(28, 22, 34, .78); }
+.floatbtn:active { transform: scale(.92); }
 
 .tab, .tabtool {
   display: flex;
@@ -658,8 +798,7 @@
   .slot { min-height: 104px; }
   .slot[data-layer="SHOES"],
   .slot[data-layer="BAGS"],
-  .slot[data-layer="JEWELRY"],
-  .slot[data-layer="SCARVES"] { min-height: 56px; }
+  .slot[data-layer="SHOES"] { min-height: 56px; }
   .arrow { width: 30px; height: 30px; font-size: 19px; }
   .btn--big { min-height: 38px; font-size: 13px; }
 }

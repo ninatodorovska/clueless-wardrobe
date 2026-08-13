@@ -20,6 +20,9 @@
       <section class="pane pane--wardrobe" id="pane-wardrobe">
         <div class="slotstack" id="slotStack"></div>
 
+        <!-- accessories live here so they don't crush the outfit -->
+        <aside class="siderail" id="sideRail"></aside>
+
         <div class="wardrobe__foot">
           <div class="actionrow">
             <button class="btn btn--big" id="dressMe" title="Style a random outfit">DRESS ME</button>
@@ -94,26 +97,16 @@
           <span>looks</span>
         </button>
       </div>
-
-      <div class="tabbar__tools">
-        <button class="tabtool" id="railsBtn" title="Rails and season" aria-label="Rails and season">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" aria-hidden="true">
-            <path d="M4 7h5M15 7h5M4 12h11M19 12h1M4 17h3M13 17h7"/>
-            <circle cx="12" cy="7" r="2.1"/><circle cx="17" cy="12" r="2.1"/><circle cx="10" cy="17" r="2.1"/>
-          </svg>
-          <span>rails</span>
-        </button>
-        <button class="tabtool" id="paperBtn" title="Wallpaper" aria-label="Wallpaper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3.4" y="3.4" width="10" height="10" rx="1.4"/>
-            <path d="M17 8.6h2.6a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V17"/>
-          </svg>
-          <span>paper</span>
-        </button>
-      </div>
     </nav>
+
+    <!-- floats over the wallpaper, top corner — not a bar -->
+    <button class="floatbtn" id="settingsBtn" title="Season, rails and wallpaper" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3.1"/>
+        <path d="M19.1 14.5a1.5 1.5 0 0 0 .3 1.7l.1.1a1.8 1.8 0 1 1-2.6 2.6l-.1-.1a1.5 1.5 0 0 0-1.7-.3 1.5 1.5 0 0 0-.9 1.4v.3a1.8 1.8 0 1 1-3.6 0v-.2a1.5 1.5 0 0 0-1-1.4 1.5 1.5 0 0 0-1.7.3l-.1.1a1.8 1.8 0 1 1-2.6-2.6l.1-.1a1.5 1.5 0 0 0 .3-1.7 1.5 1.5 0 0 0-1.4-.9h-.3a1.8 1.8 0 1 1 0-3.6h.2a1.5 1.5 0 0 0 1.4-1 1.5 1.5 0 0 0-.3-1.7l-.1-.1a1.8 1.8 0 1 1 2.6-2.6l.1.1a1.5 1.5 0 0 0 1.7.3h.1a1.5 1.5 0 0 0 .9-1.4v-.3a1.8 1.8 0 1 1 3.6 0v.2a1.5 1.5 0 0 0 .9 1.4 1.5 1.5 0 0 0 1.7-.3l.1-.1a1.8 1.8 0 1 1 2.6 2.6l-.1.1a1.5 1.5 0 0 0-.3 1.7v.1a1.5 1.5 0 0 0 1.4.9h.3a1.8 1.8 0 1 1 0 3.6h-.2a1.5 1.5 0 0 0-1.4.9Z"/>
+      </svg>
+    </button>
 
   </div>
 </div>
@@ -211,42 +204,37 @@
     </div>
   </div>
 
-  <!-- Which rails are on screen -->
-  <div class="window window--rails" id="railsWin" hidden>
+  <!-- Season, rails and wallpaper, all in one place -->
+  <div class="window window--settings" id="settingsWin" hidden>
     <div class="window__bar">
-      <span class="window__title">rails &amp; season</span>
-      <button class="window__x" data-close="rails">&times;</button>
+      <span class="window__title">settings</span>
+      <button class="window__x" data-close="settings">&times;</button>
     </div>
-    <div class="window__body rails">
+    <div class="window__body settings">
       <fieldset class="group">
         <legend>season</legend>
         <div class="chips" id="seasonChips"></div>
       </fieldset>
+
       <fieldset class="group">
         <legend>rails</legend>
         <p class="hint">Top and bottom always show. Add whatever else<br>you want to style today.</p>
         <div class="rails__list" id="railsList"></div>
       </fieldset>
-      <button class="btn btn--wide" data-close="rails">done</button>
-    </div>
-  </div>
 
-  <!-- Wallpaper picker -->
-  <div class="window window--paper" id="paperWin" hidden>
-    <div class="window__bar">
-      <span class="window__title">WALLPAPER</span>
-      <button class="window__x" data-close="paper">&times;</button>
-    </div>
-    <div class="window__body paper">
-      <div class="paper__stage">
-        <button class="arrow" id="paperPrev" title="Previous">&#9664;</button>
-        <div class="paper__preview" id="paperPreview" tabindex="0"></div>
-        <button class="arrow" id="paperNext" title="Next">&#9654;</button>
-      </div>
-      <div class="paper__name" id="paperName">LEOPARD</div>
-      <p class="hint paper__hint">Swipe the swatch, or pick one below.<br>It changes as you go.</p>
-      <div class="paper__grid" id="paperGrid"></div>
-      <button class="btn btn--hot btn--wide" data-close="paper">DONE</button>
+      <fieldset class="group">
+        <legend>wallpaper</legend>
+        <div class="paper__stage">
+          <button class="arrow" id="paperPrev" title="Previous">&#8249;</button>
+          <div class="paper__preview" id="paperPreview" tabindex="0"></div>
+          <button class="arrow" id="paperNext" title="Next">&#8250;</button>
+        </div>
+        <div class="paper__name" id="paperName">leopard</div>
+        <p class="hint paper__hint">Swipe the swatch, or pick one below.</p>
+        <div class="paper__grid" id="paperGrid"></div>
+      </fieldset>
+
+      <button class="btn btn--hot btn--wide" data-close="settings">done</button>
     </div>
   </div>
 
@@ -278,6 +266,7 @@
 <script src="js/db.js"></script>
 <script src="js/cutout.js"></script>
 <script src="js/segment.js"></script>
+<script src="js/classify.js"></script>
 <script src="js/match.js"></script>
 <script src="js/store.js"></script>
 <script src="js/screens.js"></script>

@@ -592,11 +592,11 @@
 }
 .siderail::-webkit-scrollbar { width: 0; }
 
-.sidetile { flex: 0 0 auto; width: 62px; }
+.sidetile { flex: 0 0 auto; width: 84px; }
 .sidetile__stage {
   position: relative;
-  width: 62px;
-  height: 62px;
+  width: 84px;
+  height: 84px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -648,7 +648,7 @@
 .sidetile__off {
   position: absolute;
   top: 2px; right: 2px;
-  width: 16px; height: 16px;
+  width: 18px; height: 18px;
   display: grid; place-items: center;
   font-size: 10px;
   line-height: 1;
@@ -664,9 +664,13 @@
 .sidetile__label {
   margin-top: 3px;
   text-align: center;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: .1em;
+  letter-spacing: .06em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   text-transform: uppercase;
   color: #fff;
   text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 0 2px rgba(0,0,0,.6);
@@ -674,7 +678,7 @@
 
 /* keep the outfit column clear of the strip */
 .pane--wardrobe.has-side .slotstack,
-.pane--wardrobe.has-side .wardrobe__foot { padding-right: 84px; }
+.pane--wardrobe.has-side .wardrobe__foot { padding-right: 106px; }
 
 /* On touch these can't hide behind hover, so keep them as narrow edge
    strips rather than half-tile slabs — otherwise they sit on top of
